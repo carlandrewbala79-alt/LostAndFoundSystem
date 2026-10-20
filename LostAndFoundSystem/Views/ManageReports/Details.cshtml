@@ -1,0 +1,240 @@
+﻿@model LostAndFoundSystem.Models.Item
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Report Details";
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h3 class="mb-1">
+                Report Details
+            </h3>
+
+            <small class="text-muted">
+                Review the report before approving or rejecting it.
+            </small>
+        </div>
+
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="text-center mb-4">
+
+                    <img src="@Model.ImageUrl"
+                         alt="@Model.Title"
+                         style="max-width:400px; max-height:300px; object-fit:cover;"
+                         class="img-fluid rounded shadow-sm" />
+
+                </div>
+            }
+
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Item Name
+                    </strong>
+
+                    <div>
+                        @Model.Title
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Category
+                    </strong>
+
+                    <div>
+                        @(Model.Category?.CategoryName ?? "General")
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Item Status
+                    </strong>
+
+                    <div>
+                        @Model.Status
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Approval Status
+                    </strong>
+
+                    <div>
+                        @Model.ApprovalStatus
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Location
+                    </strong>
+
+                    <div>
+                        @(string.IsNullOrWhiteSpace(Model.LocationFound)
+                            ? "Not provided"
+                            : Model.LocationFound)
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <strong>
+                        Date Reported
+                    </strong>
+
+                    <div>
+                        @Model.DateReported.ToString("MMMM dd, yyyy hh:mm tt")
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 mb-3">
+
+                    <strong>
+                        Description
+                    </strong>
+
+                    <div class="mt-1">
+
+                        @(string.IsNullOrWhiteSpace(Model.Description)
+                            ? "No description provided."
+                            : Model.Description)
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <hr />
+
+
+            <h5 class="mb-3">
+                Student Who Submitted the Report
+            </h5>
+
+
+            @if (Model.ReportedByUser != null)
+            {
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>
+                            Full Name
+                        </strong>
+
+                        <div>
+                            @Model.ReportedByUser.FullName
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>
+                            Email
+                        </strong>
+
+                        <div>
+                            @Model.ReportedByUser.Email
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">
+                    Student information is unavailable.
+                </p>
+            }
+
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+
+                <a asp-controller="ManageReports"
+                   asp-action="Index"
+                   class="btn btn-secondary">
+
+                    Back to Reports
+
+                </a>
+
+
+                @if (Model.ApprovalStatus == "Pending")
+                {
+                    <form asp-controller="ManageReports"
+                          asp-action="Approve"
+                          asp-route-id="@Model.ItemID"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-success"
+                                onclick="return confirm('Approve this report? It will become an official Lost & Found post.');">
+
+                            Approve Report
+
+                        </button>
+
+                    </form>
+
+
+                    <form asp-controller="ManageReports"
+                          asp-action="Reject"
+                          asp-route-id="@Model.ItemID"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-danger"
+                                onclick="return confirm('Reject this report? It will not be posted publicly.');">
+
+                            Reject Report
+
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

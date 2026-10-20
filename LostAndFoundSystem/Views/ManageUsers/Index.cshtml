@@ -1,0 +1,605 @@
+
+@model List<LostAndFoundSystem.Models.User>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Users";
+    string currentFilter = ViewBag.Filter ?? "All Users";
+    int totalUsers = ViewBag.TotalUsers ?? Model?.Count ?? 0;
+}
+
+<style>
+    /* =========================
+       PAGE LAYOUT
+       ========================= */
+
+    .admin-page {
+        width: 100%;
+        max-width: 1500px;
+        min-width: 0;
+        margin: 0 auto;
+        padding: 28px 28px 50px;
+        color: #17324d;
+        box-sizing: border-box;
+    }
+
+    .admin-page *,
+    .admin-page *::before,
+    .admin-page *::after {
+        box-sizing: border-box;
+    }
+
+    /* =========================
+       PAGE HEADER
+       ========================= */
+
+    .page-header {
+        position: relative;
+        min-height: 180px;
+        padding: 36px 42px;
+        margin-bottom: 28px;
+        border-radius: 28px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #72d3ee 0%, #43b5df 55%, #159dcc 100%);
+        box-shadow: 0 18px 38px rgba(24, 145, 188, .18);
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .page-header-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .page-header h1 {
+        margin: 0 0 10px;
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: -.03em;
+        overflow-wrap: anywhere;
+    }
+
+    .page-header p {
+        margin: 0;
+        max-width: 680px;
+        font-size: 14px;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, .94);
+        overflow-wrap: anywhere;
+    }
+
+    /* =========================
+       USERS CONTAINER
+       ========================= */
+
+    .users-container {
+        width: 100%;
+        min-width: 0;
+        background: #fff;
+        border: 1px solid #e7eef5;
+        border-radius: 25px;
+        padding: 28px;
+        box-shadow: 0 8px 24px rgba(28, 61, 91, .05);
+        margin-bottom: 24px;
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 16px;
+        min-width: 0;
+    }
+
+    .list-header > div:first-child {
+        min-width: 0;
+    }
+
+    .list-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 900;
+        overflow-wrap: anywhere;
+    }
+
+    .users-count {
+        font-size: 13px;
+        color: #7890a4;
+        margin-top: 4px;
+    }
+
+    /* =========================
+       FILTER
+       ========================= */
+
+    .filter-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #5a7388;
+        flex-shrink: 0;
+    }
+
+    .user-filter {
+        width: auto;
+        max-width: 100%;
+        min-width: 0;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid #d0e0ec;
+        font-size: 13px;
+        font-weight: 600;
+        color: #17324d;
+        background: #f7fbfe;
+        cursor: pointer;
+    }
+
+    /* =========================
+       ALERTS
+       ========================= */
+
+    .alert-success,
+    .alert-danger {
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .alert-success {
+        background: #e8f8ef;
+        color: #1a7a45;
+        border: 1px solid #b8e6c9;
+    }
+
+    .alert-danger {
+        background: #fdecea;
+        color: #b42318;
+        border: 1px solid #f5c2c0;
+    }
+
+    /* =========================
+       RESPONSIVE TABLE
+       ========================= */
+
+    .users-table-wrapper {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 10px;
+    }
+
+    .users-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+
+    .users-table th {
+        text-align: left;
+        padding: 12px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #5a7388;
+        border-bottom: 2px solid #e7eef5;
+        white-space: normal;
+    }
+
+    .users-table td {
+        padding: 16px 14px;
+        border-bottom: 1px solid #eef3f8;
+        vertical-align: middle;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    .users-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .users-table th:last-child,
+    .users-table td:last-child {
+        white-space: nowrap;
+    }
+
+    .user-name {
+        font-weight: 800;
+        color: #17324d;
+    }
+
+    /* =========================
+       ROLE BADGES
+       ========================= */
+
+    .badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        white-space: nowrap;
+    }
+
+    .badge-student {
+        background: #e7f4ff;
+        color: #1a6fb5;
+    }
+
+    .badge-admin {
+        background: #f0eaff;
+        color: #5b3dc4;
+    }
+
+    /* =========================
+       DELETE BUTTON
+       ========================= */
+
+    .btn-sm {
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-delete {
+        background: #fdecea;
+        color: #b42318;
+    }
+
+    .btn-delete:hover {
+        background: #f8d4d2;
+    }
+
+    /* =========================
+       EMPTY STATE
+       ========================= */
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7890a4;
+    }
+
+    .empty-state h3 {
+        margin: 16px 0 8px;
+        color: #17324d;
+        font-weight: 800;
+    }
+
+    /* =========================
+       BACK BUTTON
+       ========================= */
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 14px;
+        background: #f0f7fc;
+        color: #159dcc;
+        font-weight: 800;
+        font-size: 13px;
+        text-decoration: none;
+        border: 1px solid #d0e8f5;
+        max-width: 100%;
+    }
+
+    .back-button:hover {
+        background: #e3f2fb;
+    }
+
+    /* =========================
+       TABLET
+       ========================= */
+
+    @@media (max-width: 900px) {
+        .admin-page {
+            padding: 22px 18px 40px;
+        }
+
+        .page-header {
+            min-height: 155px;
+            padding: 30px;
+            border-radius: 23px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+        }
+
+        .users-container {
+            padding: 22px;
+            border-radius: 22px;
+        }
+
+        .list-header {
+            align-items: flex-start;
+        }
+    }
+
+    /* =========================
+       MOBILE
+       ========================= */
+
+    @@media (max-width: 600px) {
+        .admin-page {
+            width: 100%;
+            max-width: 100%;
+            padding: 18px 12px 30px;
+            margin: 0;
+        }
+
+        .page-header {
+            width: 100%;
+            min-height: 130px;
+            padding: 24px 20px;
+            margin-bottom: 18px;
+            border-radius: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            line-height: 1.2;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .users-container {
+            width: 100%;
+            max-width: 100%;
+            padding: 18px 14px;
+            border-radius: 20px;
+            margin-bottom: 18px;
+        }
+
+        .list-header {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .list-header h2 {
+            font-size: 20px;
+        }
+
+        .filter-area {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .user-filter {
+            flex: 1;
+            width: 1%;
+            max-width: 230px;
+            padding: 11px 10px;
+        }
+
+        .users-table-wrapper {
+            margin: 0;
+            border: 1px solid #eef3f8;
+            border-radius: 12px;
+        }
+
+        .users-table {
+            min-width: 850px;
+        }
+
+        .users-table th {
+            padding: 12px;
+            font-size: 11px;
+        }
+
+        .users-table td {
+            padding: 14px 12px;
+            font-size: 13px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 5px 9px;
+        }
+
+        .btn-sm {
+            padding: 9px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            padding: 40px 12px;
+        }
+
+        .back-button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* =========================
+       SMALL MOBILE
+       ========================= */
+
+    @@media (max-width: 360px) {
+        .admin-page {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+
+        .page-header {
+            padding: 22px 16px;
+        }
+
+        .page-header h1 {
+            font-size: 25px;
+        }
+
+        .users-container {
+            padding: 15px 10px;
+        }
+
+        .filter-area {
+            gap: 7px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+        }
+
+        .user-filter {
+            font-size: 12px;
+            padding: 10px 7px;
+        }
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <h1>Manage Users</h1>
+            <p>View all registered accounts. Filter by role and remove users when necessary.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="users-container">
+
+        <div class="list-header">
+            <div>
+                <h2>Registered Users</h2>
+                <div class="users-count">
+                    @totalUsers @(totalUsers == 1 ? "user" : "users") found
+                </div>
+            </div>
+
+            <div class="filter-area">
+                <span class="filter-label">Filter:</span>
+
+                <select class="user-filter"
+                        aria-label="Filter users by role"
+                        onchange="window.location.href='@Url.Action("Index", "ManageUsers")?filter=' + encodeURIComponent(this.value)">
+                    @foreach (var f in new[] { "All Users", "Students", "Administrators" })
+                    {
+                        if (currentFilter == f)
+                        {
+                            <option selected value="@f">@f</option>
+                        }
+                        else
+                        {
+                            <option value="@f">@f</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <h3>No users available</h3>
+                <p>User accounts will appear here once registered.</p>
+            </div>
+        }
+        else
+        {
+            <div class="users-table-wrapper" role="region" aria-label="Registered users table" tabindex="0">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Student ID</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="user-name">@user.FullName</span>
+                                </td>
+
+                                <td>@user.Email</td>
+
+                                <td>@(user.StudentID ?? "—")</td>
+
+                                <td>
+                                    <span class="badge @(user.Role == "Admin" ? "badge-admin" : "badge-student")">
+                                        @(user.Role == "Admin" ? "Administrator" : "Student")
+                                    </span>
+                                </td>
+
+                                <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+
+                                <td>
+                                    <form asp-action="Delete"
+                                          method="post"
+                                          style="display:inline;"
+                                          onsubmit="return confirm('Delete user @user.FullName permanently? This also removes their reports and claims.');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="id" value="@user.UserID" />
+
+                                        <button type="submit" class="btn-sm btn-delete">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <a asp-controller="Admin" asp-action="Index" class="back-button">
+        <span>←</span> Back to Admin Dashboard
+    </a>
+
+</div>
